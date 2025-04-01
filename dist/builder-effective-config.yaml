@@ -1,0 +1,14 @@
+directories:
+  output: dist
+  buildResources: build
+appId: com.seuprojeto.app
+productName: GerFinance
+files:
+  - filter:
+      - '**/*'
+      - '!node_modules/**/*/{CHANGELOG.md,README.md,README,readme.md,readme}'
+      - '!**/node_modules/.bin'
+      - '!*.map'
+win:
+  target: nsis
+electronVersion: 35.1.0

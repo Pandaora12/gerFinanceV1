@@ -1,0 +1,54 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Configurações</title>
+  <link rel="stylesheet" href="../CSS/settings.css">
+  <link rel="stylesheet" href="../CSS/dashboard.css">
+
+</head>
+
+<body>
+
+    <!-- Cabeçalho com ícone de hambúrguer -->
+    <header class="dashboard-header">
+      <button class="hamburger-menu" id="menu-toggle">☰</button>
+      <h1>Dashboard</h1>
+  </header>
+
+  <div class="settings-container">
+    <h1>Configurações</h1>
+    <div class="generate-code-section">
+      <p>Seu código de compartilhamento:</p>
+      <input type="text" id="generated-code" readonly>
+      <button id="generate-code-btn">Gerar Código</button>
+      <p id="expiry-info">O código será válido por 1 hora.</p>
+    </div>
+
+      <!-- Novo botão para mudar tema -->
+    <div class="theme-section">
+      <button id="change-theme-btn">Mudar Tema</button>
+    </div>
+
+    <!-- Novo botão para excluir conta -->
+    <div class="delete-account-section">
+      <button id="delete-account-btn" class="danger">Excluir Conta</button>
+    </div>
+</div>
+
+  </div>
+
+   <!-- Menu lateral -->
+<nav id="sidebar-menu">
+  <ul>
+      <li><a href="dashboard.html">📊 Dashboard</a></li>
+      <li><a href="settings.html">⚙ Configurações</a></li>
+      <li><a href="#" id="logout-btn">🚪 Sair</a></li>
+  </ul>
+</nav>
+
+  <script src="../JS/settings.js"></script>
+  <script src="../JS/dashboard.js"></script>
+</body>
+</html>

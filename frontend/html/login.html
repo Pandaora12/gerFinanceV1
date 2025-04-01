@@ -1,0 +1,25 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Login</title>
+  <link rel="stylesheet" href="../css/login.css">
+  <script type="module">
+    import { createClient } from "https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/+esm";
+    window.supabase = createClient("https://eipzrerphviykmmzvdfl.supabase.co", "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImVpcHpyZXJwaHZpeWttbXp2ZGZsIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDMxMTc3NjIsImV4cCI6MjA1ODY5Mzc2Mn0.nWJIYoP4fenCh0naMpdyj2rie01BAcechxuc8tiKqo8");
+  </script>
+</head>
+<body>
+  <div class="login-container">
+    <h1>Bem-vindo ao GerFinance</h1>
+    <form id="login-form">
+      <input type="email" id="email" placeholder="Digite seu email" required>
+      <input type="password" id="password" placeholder="Digite sua senha" required>
+      <button type="submit">Entrar</button>
+    </form>
+    <p>Não possui uma conta? <a href="register.html">Registre-se aqui</a></p>
+  </div>
+  <script type="module" src="../js/login.js"></script>
+</body>
+</html>

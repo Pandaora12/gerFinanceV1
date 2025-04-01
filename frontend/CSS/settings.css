@@ -1,0 +1,77 @@
+.settings-container {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  margin-top: 50px;
+}
+
+.generate-code-section, .theme-section, .delete-account-section {
+  margin-top: 20px;
+}
+
+.generate-code-section p, .theme-section button, .delete-account-section button {
+  margin-bottom: 10px;
+}
+
+input {
+  padding: 10px;
+  width: 250px;
+  text-align: center;
+  margin-bottom: 10px;
+}
+
+button {
+  padding: 12px 20px;
+  font-size: 16px;
+  font-weight: bold;
+  border: none;
+  border-radius: 6px;
+  cursor: pointer;
+  transition: background-color 0.2s ease-in-out;
+}
+
+button#generate-code-btn {
+  background-color: #007BFF;
+  color: white;
+}
+
+button#generate-code-btn:hover {
+  background-color: #0056b3;
+}
+
+button#change-theme-btn {
+  background-color: #4CAF50;
+  color: white;
+}
+
+button#change-theme-btn:hover {
+  background-color: #388E3C;
+}
+
+button.danger {
+  background-color: #F44336;
+  color: white;
+}
+
+button.danger:hover {
+  background-color: #D32F2F;
+}
+
+/** Dark theme **/
+
+body.dark-theme {
+  background-color: #121212;
+  color: white;
+}
+
+header.dashboard-header {
+  background-color: #333;
+}
+
+button {
+  background-color: #444;
+}
+
+button:hover {
+  background-color: #222;
+}
