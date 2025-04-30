@@ -27,11 +27,19 @@
   "dependencies": {
     "@supabase/supabase-js": "^2.49.3",
     "bcrypt": "^5.1.1",
-    "nodemailer": "^6.10.0"
+    "body-parser": "^2.2.0",
+    "cors": "^2.8.5",
+    "dotenv": "^16.5.0",
+    "express": "^5.1.0",
+    "jsonwebtoken": "^9.0.2",
+    "nodemailer": "^6.10.0",
+    "pg": "^8.15.6"
   },
   "devDependencies": {
     "electron": "^35.1.0",
-    "electron-builder": "^26.0.12"
+    "electron-builder": "^26.0.12",
+    "jest": "^29.7.0",
+    "nodemon": "^3.1.10"
   },
   "author": "Bruno | Lucas",
   "license": "MIT"

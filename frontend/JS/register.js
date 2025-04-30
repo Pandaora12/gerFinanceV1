@@ -1,80 +1,122 @@
-import bcrypt from "bcrypt";
-
 document.addEventListener("DOMContentLoaded", () => {
-  console.log("Script carregado!");
+  console.log("Script de registro carregado!");
 
+  // Elementos do DOM
   const registerForm = document.getElementById("register-form");
   const registerPopup = document.getElementById("register-popup");
   const closePopupBtn = document.getElementById("close-popup-btn");
+  const registerBtn = document.getElementById("register-btn");
+  const btnText = document.getElementById("btn-text");
+  const btnSpinner = document.getElementById("btn-spinner");
 
-  console.log("registerForm:", registerForm);
-  console.log("registerPopup:", registerPopup);
-  console.log("closePopupBtn:", closePopupBtn);
+  // Constantes
+  const API_URL = "http://localhost:3000"; // Substitua por .env em produção
+
+  // Formatação de telefone (opcional)
+  document.getElementById("register-phone").addEventListener("input", (e) => {
+    e.target.value = e.target.value
+      .replace(/\D/g, "")
+      .replace(/(\d{2})(\d)/, "($1) $2")
+      .replace(/(\d{5})(\d)/, "$1-$2")
+      .substring(0, 15);
+  });
 
   // Evento de envio do formulário
   registerForm.addEventListener("submit", async (event) => {
     event.preventDefault();
 
-    const name = document.getElementById("register-name").value.trim();
-    const email = document.getElementById("register-email").value.trim();
-    const phone = document.getElementById("register-phone").value.trim();
-    const password = document.getElementById("register-password").value.trim();
-    const confirmPassword = document.getElementById("register-confirm-password").value.trim();
+    // Dados do formulário
+    const formData = {
+      nome_completo: document.getElementById("register-name").value.trim(),
+      email: document.getElementById("register-email").value.trim().toLowerCase(),
+      telefone: document.getElementById("register-phone").value.replace(/\D/g, ""),
+      senha: document.getElementById("register-password").value.trim(),
+      confirmPassword: document.getElementById("register-confirm-password").value.trim()
+    };
 
-    if (!name || !email || !phone || !password || !confirmPassword) {
-      alert("Por favor, preencha todos os campos.");
+    // Validações básicas
+    if (!Object.values(formData).every(Boolean)) {
+      showAlert("Por favor, preencha todos os campos.");
       return;
     }
 
-    if (!email.includes("@")) {
-      alert("Insira um email válido.");
+    if (formData.senha !== formData.confirmPassword) {
+      showAlert("As senhas não coincidem!");
       return;
     }
 
-    if (password.length < 6) {
-      alert("A senha precisa ter pelo menos 6 caracteres.");
+    if (formData.senha.length < 6) {
+      showAlert("A senha deve ter no mínimo 6 caracteres.");
       return;
     }
 
-    if (password !== confirmPassword) {
-      alert("As senhas não coincidem.");
-      return;
-    }
+    // Feedback visual durante o registro
+    toggleLoading(true);
 
     try {
-      console.log("Tentando registrar:", { email, password });
-      const { data, error } = await supabase.auth.signUp({ email, password });
+      const response = await fetch(`${API_URL}/usuarios`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          nome_completo: formData.nome_completo,
+          email: formData.email,
+          telefone: formData.telefone,
+          senha: formData.senha
+        }),
+      });
 
-      console.log("Resposta do Supabase:", data, error);
+      const data = await response.json();
 
-      if (error) {
-        console.error("Erro ao registrar:", error.message);
-        alert("Erro ao registrar: " + error.message);
-        return;
+      if (!response.ok) {
+        throw new Error(data.message || "Erro desconhecido");
       }
 
-      console.log("Usuário registrado com sucesso!");
-
-      if (registerPopup) {
-        console.log("Exibindo pop-up...");
-        registerPopup.classList.remove("hidden");
-      } else {
-        console.error("Elemento register-popup não encontrado!");
-      }
-
-      if (closePopupBtn) {
-        closePopupBtn.addEventListener("click", () => {
-          registerPopup.classList.add("hidden");
-          window.location.href = "login.html";
-        });
-      }
-
+      // Sucesso
+      showPopup();
       setTimeout(() => {
         window.location.href = "login.html";
       }, 3000);
-    } catch (err) {
-      console.error("Erro inesperado ao registrar:", err.message);
-      alert("Erro inesperado ao registrar. Tente novamente.");
+
+    } catch (error) {
+      console.error("Erro no registro:", error);
+      let errorMessage = "Erro ao cadastrar. Email já cadastrado.";
+      if (error.message.includes("duplicate key value")) {
+        errorMessage = "Este e-mail já está cadastrado.";
+        }
+        showAlert(errorMessage);
+    } finally {
+      toggleLoading(false);
     }
   });
+
+  // Fecha o pop-up
+  closePopupBtn?.addEventListener("click", () => {
+    registerPopup.classList.add("hidden");
+    window.location.href = "login.html";
+  });
+
+  // Funções auxiliares
+  function toggleLoading(isLoading) {
+    if (isLoading) {
+      btnText.classList.add("hidden");
+      btnSpinner.classList.remove("hidden");
+      registerBtn.disabled = true;
+    } else {
+      btnText.classList.remove("hidden");
+      btnSpinner.classList.add("hidden");
+      registerBtn.disabled = false;
+    }
+  }
+
+  function showAlert(message) {
+    alert(message); // Substitua por um toast/sweetAlert em produção
+  }
+
+  function showPopup() {
+    if (registerPopup) {
+      registerPopup.classList.remove("hidden");
+    }
+  }
 });

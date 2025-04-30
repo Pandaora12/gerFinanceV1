@@ -1,4 +1,5 @@
-import { createClient } from "@supabase/supabase-js";
+// supabase-client.js
+import { createClient } from "https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/+esm";
 
 // URL e chave do Supabase (copie da aba Configuração/API)
 const supabaseUrl = "https://eipzrerphviykmmzvdfl.supabase.co";

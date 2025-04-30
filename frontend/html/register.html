@@ -5,10 +5,6 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Registro</title>
   <link rel="stylesheet" href="../css/register.css">
-  <script type="module">
-    import { createClient } from "https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/+esm";
-    window.supabase = createClient("https://eipzrerphviykmmzvdfl.supabase.co", "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImVpcHpyZXJwaHZpeWttbXp2ZGZsIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDMxMTc3NjIsImV4cCI6MjA1ODY5Mzc2Mn0.nWJIYoP4fenCh0naMpdyj2rie01BAcechxuc8tiKqo8");
-  </script>
 </head>
 <body>
   <div class="register-container">
@@ -19,7 +15,10 @@
       <input type="tel" id="register-phone" placeholder="Digite seu telefone" maxlength="15" required>
       <input type="password" id="register-password" placeholder="Crie uma senha" required>
       <input type="password" id="register-confirm-password" placeholder="Confirme sua senha" required>
-      <button type="submit" id="register-btn">Registrar</button>
+      <button type="submit" id="register-btn">
+        <span id="btn-text">Registrar</span>
+        <span id="btn-spinner" class="hidden">Carregando...</span>
+      </button>
     </form>
     <p>Já possui uma conta? <a href="login.html">Voltar para o login</a></p>
   </div>
@@ -27,12 +26,11 @@
   <!-- Pop-up Modal -->
   <div id="register-popup" class="popup-container hidden">
     <div class="popup-content">
-      <p>Um email de confirmação foi enviado para sua caixa de entrada. Caso não encontre, verifique a caixa de Spam.</p>
+      <p>Cadastro realizado com sucesso! Você será redirecionado para o login.</p>
       <button id="close-popup-btn">Fechar</button>
     </div>
   </div>
 
   <script type="module" src="../js/register.js"></script>
-
 </body>
 </html>

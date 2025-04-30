@@ -7,82 +7,48 @@
   <link rel="stylesheet" href="../css/dashboard.css">
 </head>
 <body>
-  <!-- Cabeçalho com ícone de hambúrguer -->
+  <!-- Cabeçalho -->
   <header class="dashboard-header">
     <button class="hamburger-menu" id="menu-toggle" aria-label="Abrir menu">☰</button>
     <h1>Dashboard</h1>
-</header>
+  </header>
 
-  <!-- Lista de usuários e status -->
+  <!-- Busca e Lista de fichas -->
   <main class="dashboard-container">
-    <ul id="user-list" class="user-list">
-      <li class="user-item" onclick="openTable('gustavo')">
-        <span class="user-name">Gustavo Queiroz da Silva Soares</span>
-        <span class="status">
-          <span class="status-circle green"></span>
-          <span class="status-text">CONCLUÍDO</span>
-        </span>
-      </li>
-      <li class="user-item" onclick="openTable('bruno')">
-        <span class="user-name">Bruno Luiz Xavier dos Santos</span>
-        <span class="status">
-          <span class="status-circle yellow"></span>
-          <span class="status-text">PENDENTE</span>
-        </span>
-      </li>
-      <li class="user-item" onclick="openTable('alexandre')">
-        <span class="user-name">Alexandre Calvacanti Pinto</span>
-        <span class="status">
-          <span class="status-circle red"></span>
-          <span class="status-text">AGUARDANDO</span>
-        </span>
-      </li>
-    </ul>
+    <!-- Nome user logado -->
+    <div id="welcome-container">
+      <h2>Bem-vindo, <span id="user-name"></span>!</h2>
+    </div>
 
+    <!-- Campo de busca -->
+    <div id="search-container">
+      <input type="text" id="search-input" placeholder="Buscar por CPF/CNPJ" />
+      <button id="search-btn">Buscar</button>
+    </div>
+
+    <!-- Fichas do cliente -->
+    <div id="user-list-container">
+      <ul id="user-list" class="user-list">
+        <!-- Exemplo de ficha inicial -->
+        <li class="user-item" onclick="openTable('gustavo')">
+          <span class="user-name">Gustavo Queiroz da Silva Soares</span>
+          <span class="status">
+            <span class="status-circle green"></span>
+            <span class="status-text">ENTRADA</span>
+          </span>
+        </li>
+      </ul>
+    </div>
   </main>
 
+  <!-- Pop-up de ficha -->
   <div id="table-popup" class="popup hidden">
     <div class="popup-content">
-      <!-- Botão para gerar PDF -->
       <button id="generate-pdf-btn" class="generate-pdf-btn">📄</button>
-      <h2>Dados da Tabela - Gustavo Queiroz da Silva Soares</h2>
+      <h2>Dados da Ficha</h2>
       <table id="details-table">
-        <tr>
-          <th>Nome:</th>
-          <td>Gustavo Queiroz da Silva Soares</td>
-        </tr>
-        <tr>
-          <th>CPF:</th>
-          <td>221.533.272-05</td>
-        </tr>
-        <tr>
-          <th>Telefone:</th>
-          <td>(11) 99412-8922</td>
-        </tr>
-        <tr>
-          <th>Email:</th>
-          <td>GustaOFC@gmail.com</td>
-        </tr>
-        <tr>
-          <th>Valor:</th>
-          <td>R$ 9.245,00</td>
-        </tr>
-        <tr>
-          <th>Data Inicial:</th>
-          <td>14/12/2023</td>
-        </tr>
-        <tr>
-          <th>Data Final:</th>
-          <td>30/04/2025</td>
-        </tr>
-        <tr>
-          <th>Descrição:</th>
-          <td>
-            Lorem ipsum is placeholder text commonly used in the graphic, print, and publishing industries for previewing layouts and visual mockups.
-          </td>
-        </tr>
+        <!-- Dados da ficha carregados dinamicamente -->
       </table>
-      <!-- Botões para editar e excluir -->
       <div class="popup-actions">
         <button id="edit-table-btn">Editar</button>
         <button id="delete-table-btn" class="danger">Excluir</button>
@@ -90,83 +56,112 @@
     </div>
   </div>
 
+  <!-- Pop-up de criação -->
   <div id="create-table-popup" class="popup hidden">
     <div class="popup-content">
-      <h2>Criar Nova Tabela</h2>
+      <h2>Criar Nova Ficha</h2>
       <form id="create-table-form">
+        <!-- Campos de entrada -->
         <div class="form-group">
-          <label for="client-name">Nome do Cliente ou da Empresa:</label>
-          <input type="text" id="client-name" placeholder="Ex.: Nome do cliente ou da empresa" required>
+          <label for="client-name">Nome do Cliente:</label>
+          <input type="text" id="client-name" placeholder="Ex.: Nome do cliente" required>
         </div>
-  
         <div class="form-group">
           <label for="cpf-cnpj">CPF/CNPJ:</label>
           <input type="text" id="cpf-cnpj" placeholder="000.000.000-00" required>
         </div>
-  
         <div class="form-group">
           <label for="phone-number">Telefone:</label>
           <input type="text" id="phone-number" placeholder="(00) 00000-0000" required>
         </div>
-  
         <div class="form-group">
           <label for="email">Email:</label>
           <input type="email" id="email" placeholder="email@exemplo.com" required>
         </div>
-  
         <div class="form-group">
           <label for="value">Valor:</label>
           <input type="text" id="value" placeholder="R$ 000.000,00" required>
         </div>
-  
         <div class="form-group">
           <label for="date">Data:</label>
           <input type="date" id="date" required>
         </div>
-  
         <div class="form-group">
           <label for="description">Descrição:</label>
           <textarea id="description" rows="4" placeholder="Insira a descrição aqui..." required></textarea>
         </div>
-  
         <div class="form-group">
           <label>Status:</label>
           <select id="status" required>
-            <option value="CONCLUIDO">CONCLUÍDO</option>
-            <option value="PENDENTE">PENDENTE</option>
-            <option value="AGUARDANDO">AGUARDANDO</option>
+            <option value="ENTRADA">ENTRADA</option>
+            <option value="CAIXA">CAIXA</option>
+            <option value="SAÍDA">SAÍDA</option>
           </select>
         </div>
-  
         <div class="form-actions">
           <button type="submit" id="save-table-btn">Salvar</button>
-          <button type="button" id="add-shared-code-btn">Adicionar Código Compartilhado</button>
-        </div>
-  
-        <div id="shared-code-section" class="hidden">
-          <label for="shared-code">Código Compartilhado:</label>
-          <input type="text" id="shared-code" placeholder="Insira o código aqui">
         </div>
       </form>
     </div>
   </div>
-  
-  
+
+  <!-- Modal de Visualização -->
+<div id="view-table-modal" class="modal hidden">
+  <div class="modal-content">
+    <span class="close-modal">&times;</span>
+    <h2>Detalhes da Ficha</h2>
+    <div id="table-details" class="locked-view">
+      <!-- Dados serão inseridos dinamicamente -->
+    </div>
+    <div class="modal-actions">
+      <button id="edit-table-btn" class="btn-edit">Editar</button>
+      <button id="delete-table-btn" class="btn-delete">Excluir</button>
+    </div>
+  </div>
+</div>
+
+<!-- Modal de Edição -->
+<div id="edit-table-modal" class="modal hidden">
+  <div class="modal-content">
+    <span class="close-modal">&times;</span>
+    <h2>Editar Ficha</h2>
+    <form id="edit-table-form">
+      <!-- Campos iguais ao de criação (serão preenchidos dinamicamente) -->
+    </form>
+    <button id="save-edit-btn" class="btn-save">Salvar Alterações</button>
+  </div>
+</div>
+
+<!-- Modal de Confirmação de Exclusão -->
+<div id="confirm-delete-modal" class="modal hidden">
+  <div class="modal-content">
+    <h2>Confirmar Exclusão</h2>
+    <p>A ficha será permanentemente removida. Esta ação não pode ser desfeita.</p>
+    <input type="text" id="confirm-cpf-input" placeholder="Digite o CPF/CNPJ para confirmar">
+    <div class="modal-actions">
+      <button id="cancel-delete-btn" class="btn-cancel">Cancelar</button>
+      <button id="confirm-delete-btn" class="btn-confirm-delete">Confirmar Exclusão</button>
+    </div>
+  </div>
+</div>
 
   <!-- Botão de criar tabela -->
   <footer class="dashboard-footer">
     <button id="create-table-btn">CRIE UMA NOVA TABELA</button>
   </footer>
 
- <!-- Menu lateral -->
-<nav id="sidebar-menu">
-  <ul>
+  <!-- Menu lateral -->
+  <nav id="sidebar-menu">
+    <ul>
       <li><a href="dashboard.html">📊 Dashboard</a></li>
       <li><a href="settings.html">⚙ Configurações</a></li>
       <li><a href="#" id="logout-btn">🚪 Sair</a></li>
-  </ul>
-</nav>
+    </ul>
+  </nav>
 
-  <script src="../js/dashboard.js"></script>
+  <!-- Script principal -->
+  <script type="module" src="../js/dashboard.js"></script>
+  <script type="module" src="../js/dashboard_modal.js"></script>
+
 </body>
 </html>
