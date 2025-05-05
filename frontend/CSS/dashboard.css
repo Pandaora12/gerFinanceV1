@@ -1,5 +1,18 @@
 /* ESTILO ATUALIZADO DO DASHBOARD */
 
+/* Reset e estilos base */
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+}
+
+body {
+  background-color: #f5f7fa;
+  color: #333;
+}
+
 /* Cabeçalho */
 .dashboard-header {
   display: flex;
@@ -8,6 +21,8 @@
   color: white;
   padding: 15px 25px;
   box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+  position: relative;
+  z-index: 100;
 }
 
 .dashboard-header h1 {
@@ -21,6 +36,7 @@
   padding: 20px;
   max-width: 1200px;
   margin: 0 auto;
+  min-height: calc(100vh - 120px);
 }
 
 /* Saudação ao usuário */
@@ -120,9 +136,27 @@
   background-color: #2ecc71;
 }
 
+.status-circle.yellow {
+  background-color: #f1c40f;
+}
+
+.status-circle.red {
+  background-color: #e74c3c;
+}
+
+.status-circle.gray {
+  background-color: #95a5a6;
+}
+
 .status-text {
   font-size: 0.9rem;
   font-weight: 500;
+  color: #7f8c8d;
+}
+
+.no-results {
+  padding: 20px;
+  text-align: center;
   color: #7f8c8d;
 }
 
@@ -136,6 +170,7 @@
   background: white;
   box-shadow: 0 -2px 10px rgba(0,0,0,0.05);
   text-align: center;
+  z-index: 90;
 }
 
 #create-table-btn {
@@ -197,11 +232,6 @@
   gap: 10px;
 }
 
-/* Ícones do menu */
-#sidebar-menu a::before {
-  font-size: 1.2rem;
-}
-
 /* Botão do menu hamburguer */
 .hamburger-menu {
   background: none;
@@ -210,6 +240,118 @@
   font-size: 1.5rem;
   cursor: pointer;
   margin-right: 15px;
+}
+
+/* Modais */
+.modal {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background-color: rgba(0,0,0,0.5);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 2000;
+}
+
+.modal.hidden {
+  display: none;
+}
+
+.modal-content {
+  background-color: white;
+  padding: 25px;
+  border-radius: 8px;
+  width: 90%;
+  max-width: 600px;
+  max-height: 90vh;
+  overflow-y: auto;
+  position: relative;
+}
+
+.close-modal {
+  position: absolute;
+  top: 15px;
+  right: 15px;
+  font-size: 1.5rem;
+  cursor: pointer;
+  color: #7f8c8d;
+}
+
+.modal h2 {
+  margin-bottom: 20px;
+  color: #2c3e50;
+}
+
+.locked-view {
+  pointer-events: none;
+}
+
+/* Formulários */
+.form-group {
+  margin-bottom: 15px;
+}
+
+.form-group label {
+  display: block;
+  margin-bottom: 5px;
+  font-weight: 500;
+  color: #2c3e50;
+}
+
+.form-group input,
+.form-group select,
+.form-group textarea {
+  width: 100%;
+  padding: 10px;
+  border: 1px solid #ddd;
+  border-radius: 4px;
+  font-size: 1rem;
+}
+
+.form-group textarea {
+  resize: vertical;
+  min-height: 100px;
+}
+
+.form-actions {
+  margin-top: 20px;
+  text-align: right;
+}
+
+/* Botões */
+.btn-edit, .btn-save {
+  background-color: #3498db;
+  color: white;
+  border: none;
+  padding: 10px 20px;
+  border-radius: 4px;
+  cursor: pointer;
+  font-weight: 600;
+  margin-right: 10px;
+}
+
+.btn-delete, .btn-confirm-delete {
+  background-color: #e74c3c;
+  color: white;
+  border: none;
+  padding: 10px 20px;
+  border-radius: 4px;
+  cursor: pointer;
+  font-weight: 600;
+}
+
+.btn-cancel {
+  background-color: #95a5a6;
+  color: white;
+  border: none;
+  padding: 10px 20px;
+  border-radius: 4px;
+  cursor: pointer;
+  font-weight: 600;
+  margin-right: 10px;
 }
 
 /* Responsividade */
@@ -224,5 +366,10 @@
   
   #search-btn {
     width: 100%;
+  }
+
+  .modal-content {
+    width: 95%;
+    padding: 15px;
   }
 }
