@@ -75,3 +75,22 @@ button {
 button:hover {
   background-color: #222;
 }
+
+.autologoff-section {
+  margin: 25px 0;
+  padding: 20px;
+  background: #f8f9fa;
+  border-radius: 8px;
+}
+
+.autologoff-section h3 {
+  margin-top: 0;
+  color: #343a40;
+}
+
+#autologoff-time {
+  padding: 8px 12px;
+  border: 1px solid #ddd;
+  border-radius: 4px;
+  margin-right: 10px;
+}
