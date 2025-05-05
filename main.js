@@ -1,7 +1,13 @@
 import { app, BrowserWindow, ipcMain } from "electron";
+import path from 'path';
+import { fileURLToPath } from "url";
 
 let mainWindow; // Janela de Login
 let dashboardWindow; // Janela do Dashboard
+
+// Redefinindo __dirname para módulos ESM
+const __filename = fileURLToPath(import.meta.url);
+const _dirname = path.dirname(_filename);
 
 // Função para criar a janela de login
 function createLoginWindow() {
@@ -11,14 +17,18 @@ function createLoginWindow() {
     width: 800,
     height: 600,
     webPreferences: {
-      nodeIntegration: true,
+      preload: path.join(__dirname, './frontend/JS/preload.js'), // Usando import.meta.url
+      contextIsolation: true, // Mantém o contexto isolado
+      nodeIntegration: false, // Desabilita o Node.js no frontend
     },
   });
 
-  // Carregar o arquivo HTML principal (login)
-  mainWindow.loadFile("./frontend/html/dashboard.html");
+  mainWindow.loadFile("./frontend/html/login.html"); // Carrega o arquivo HTML de login
 
-  // Quando a janela principal for fechada
+  // Abre o DevTools para a janela de login
+  mainWindow.webContents.openDevTools();
+
+  // Quando a janela de login for fechada
   mainWindow.on("closed", () => {
     mainWindow = null;
   });
@@ -32,14 +42,17 @@ function createDashboardWindow() {
     width: 1000,
     height: 700,
     webPreferences: {
-      preload: __dirname + "/preload.js", // Carrega o preload.js
+      preload: path.join(__dirname, './frontend/JS/preload.js'), // Usando import.meta.url
       contextIsolation: true, // Mantém o contexto isolado
-      enableRemoteModule: false, // Context isolation desabilitado se precisar de integração direta
+      enableRemoteModule: false, // Desabilita o RemoteModule
     },
   });
 
   // Carregar o arquivo HTML do dashboard
   dashboardWindow.loadFile("./frontend/html/dashboard.html");
+
+  // Abre o DevTools para a janela do dashboard
+  dashboardWindow.webContents.openDevTools();
 
   // Quando o dashboard for fechado
   dashboardWindow.on("closed", () => {
@@ -54,7 +67,6 @@ app.on("ready", () => {
 
 // Evento para abrir o dashboard
 ipcMain.on("open-dashboard", () => {
-  console.log("📢 Recebido evento para abrir o dashboard!");
   if (dashboardWindow) {
     dashboardWindow.focus(); // Se o dashboard já estiver aberto, traz para frente
     return;

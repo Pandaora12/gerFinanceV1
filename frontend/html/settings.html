@@ -4,8 +4,10 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Configurações</title>
+  <script src="../js/autologoff.js"></script>
   <link rel="stylesheet" href="../CSS/settings.css">
   <link rel="stylesheet" href="../CSS/dashboard.css">
+
 
 </head>
 
@@ -16,6 +18,16 @@
       <button class="hamburger-menu" id="menu-toggle">☰</button>
       <h1>Dashboard</h1>
   </header>
+
+  <div class="autologoff-section">
+    <h3>Tempo de Logoff Automático</h3>
+    <select id="autologoff-time">
+      <option value="5">5 minutos</option>
+      <option value="10">10 minutos</option>
+      <option value="15" selected>15 minutos</option>
+    </select>
+    <button id="save-autologoff-btn">Salvar</button>
+  </div>
 
   <div class="settings-container">
     <h1>Configurações</h1>
