@@ -1,0 +1,110 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta http-equiv="Content-Security-Policy" content="default-src 'self'; connect-src 'self' http://localhost:3000; script-src 'self' 'unsafe-inline' https://cdnjs.cloudflare.com; style-src 'self' 'unsafe-inline' https://cdnjs.cloudflare.com; img-src 'self' data:; font-src 'self' https://cdnjs.cloudflare.com">
+  <title>Pagamentos</title>
+  <link rel="stylesheet" href="../css/dashboard.css">
+  <link rel="stylesheet" href="../css/payments.css">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css">
+</head>
+
+<body>
+  <!-- Cabeçalho -->
+  <header class="dashboard-header">
+    <button class="hamburger-menu" id="menu-toggle" aria-label="Abrir menu">
+      <i class="fas fa-bars menu-icon"></i>
+      <i class="fas fa-times close-icon hidden"></i>
+    </button>
+    <h1>Pagamentos</h1>
+  </header>
+
+  <!-- Conteúdo principal -->
+  <main class="dashboard-container">
+    <!-- Nome user logado -->
+    <div id="welcome-container">
+      <h2>Controle de Pagamentos, <span id="user-name"></span></h2>
+    </div>
+
+    <!-- Seção de gráficos -->
+    <div class="charts-container">
+      <div class="chart-card">
+        <h3>Distribuição de Entradas e Saídas</h3>
+        <div class="chart-wrapper">
+          <canvas id="pie-chart"></canvas>
+        </div>
+      </div>
+      <div class="chart-card">
+        <h3>Histórico Financeiro</h3>
+        <div class="chart-wrapper">
+          <canvas id="line-chart"></canvas>
+        </div>
+      </div>
+    </div>
+
+    <!-- Tabela de pagamentos -->
+    <div class="payments-table-container">
+      <h3>Registros Financeiros</h3>
+      <div class="table-filters">
+        <div class="filter-group">
+          <label for="filter-status">Filtrar por Status:</label>
+          <select id="filter-status">
+            <option value="all">Todos</option>
+            <option value="ENTRADA">Entrada</option>
+            <option value="SAÍDA">Saída</option>
+            <option value="CAIXA">Caixa</option>
+          </select>
+        </div>
+        <div class="filter-group">
+          <label for="filter-payment">Filtrar por Pagamento:</label>
+          <select id="filter-payment">
+            <option value="all">Todos</option>
+            <option value="PAGO">Pago</option>
+            <option value="PARCIALMENTE_PAGO">Parcialmente Pago</option>
+            <option value="NAO_PAGO">Não Pago</option>
+          </select>
+        </div>
+        <button id="apply-filters" class="btn-filter">Aplicar Filtros</button>
+      </div>
+      
+      <div class="table-responsive">
+        <table id="payments-table">
+          <thead>
+            <tr>
+              <th>Cliente</th>
+              <th>CPF/CNPJ</th>
+              <th>Valor</th>
+              <th>Entrada</th>
+              <th>Parcelas</th>
+              <th>Status</th>
+              <th>Pagamento</th>
+              <th>Ações</th>
+            </tr>
+          </thead>
+          <tbody id="payments-table-body">
+            <!-- Dados serão carregados dinamicamente -->
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </main>
+
+  <!-- Menu lateral -->
+  <nav id="sidebar-menu">
+    <ul>
+      <li><a href="dashboard.html"><i class="fas fa-chart-bar"></i> Dashboard</a></li>
+      <li><a href="payments.html"><i class="fas fa-money-bill-wave"></i> Pagamentos</a></li>
+      <li><a href="settings.html"><i class="fas fa-cog"></i> Configurações</a></li>
+      <li><a href="#" id="logout-btn"><i class="fas fa-sign-out-alt"></i> Sair</a></li>
+    </ul>
+  </nav>
+
+  <!-- Scripts -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/3.9.1/chart.min.js"></script>
+  <script src="../js/masks.js"></script>
+  <script src="../js/dashboard-utils.js"></script>
+  <script src="../js/payments.js"></script>
+
+</body>
+</html>

@@ -105,8 +105,28 @@ app.get('/fichas', authenticate, async (req, res) => {
   }
 });
 
+// Rota para buscar uma ficha específica
+app.get('/fichas/:id', authenticate, async (req, res) => {
+  const { id } = req.params;
+  
+  try {
+    const ficha = await db.query(
+      'SELECT * FROM fichas WHERE id = $1 AND user_id = $2',
+      [id, req.userId]
+    );
+    
+    if (ficha.rows.length === 0) {
+      return res.status(404).json({ error: 'Ficha não encontrada' });
+    }
+    
+    res.json(ficha.rows[0]);
+  } catch (err) {
+    res.status(500).json({ error: 'Erro ao buscar ficha' });
+  }
+});
+
 app.post('/fichas', authenticate, async (req, res) => {
-  let { nome_cliente, cpf_cnpj, telefone, email, valor, data, descricao, status } = req.body;
+  let { nome_cliente, cpf_cnpj, telefone, email, valor, data, descricao, status, entrada, parcelas, payment_status } = req.body;
 
   // Validação e formatação
   if (!nome_cliente || nome_cliente.length < 3) {
@@ -116,30 +136,53 @@ app.post('/fichas', authenticate, async (req, res) => {
   cpf_cnpj = cpf_cnpj.replace(/\D/g, '');
   telefone = telefone.replace(/\D/g, '');
   
-  const valorNumerico = parseFloat(valor.replace('R$ ', '').replace('.', '').replace(',', '.'));
-  if (isNaN(valorNumerico)) {
+  // Converter valor para número
+  if (typeof valor === 'string') {
+    valor = parseFloat(
+      valor.replace('R$ ', '')
+        .replace(/\./g, '')
+        .replace(',', '.')
+    );
+  }
+  
+  if (isNaN(valor)) {
     return res.status(400).json({ error: 'Valor inválido' });
+  }
+  
+  // Converter entrada para número se existir
+  if (entrada && typeof entrada === 'string') {
+    entrada = parseFloat(
+      entrada.replace('R$ ', '')
+        .replace(/\./g, '')
+        .replace(',', '.')
+    );
+  }
+
+  // Definir status de pagamento padrão se não fornecido
+  if (!payment_status) {
+    payment_status = 'NAO_PAGO';
   }
 
   try {
     const newFicha = await db.query(
       `INSERT INTO fichas (
         user_id, nome_cliente, cpf_cnpj, telefone, email, 
-        valor, data, descricao, status
-      ) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9) RETURNING *`,
+        valor, data, descricao, status, entrada, parcelas, payment_status
+      ) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12) RETURNING *`,
       [req.userId, nome_cliente, cpf_cnpj, telefone, email, 
-       valorNumerico, data, descricao, status]
+       valor, data, descricao, status, entrada, parcelas, payment_status]
     );
     
     res.status(201).json(newFicha.rows[0]);
   } catch (err) {
+    console.error('Erro ao criar ficha:', err);
     res.status(500).json({ error: 'Erro ao criar ficha' });
   }
 });
 
 app.put('/fichas/:id', authenticate, async (req, res) => {
   const { id } = req.params;
-  let { nome_cliente, cpf_cnpj, telefone, email, valor, data, descricao, status } = req.body;
+  let { nome_cliente, cpf_cnpj, telefone, email, valor, data, descricao, status, entrada, parcelas, payment_status } = req.body;
 
   try {
     // Verifica se a ficha pertence ao usuário
@@ -153,21 +196,58 @@ app.put('/fichas/:id', authenticate, async (req, res) => {
     }
 
     // Formatação dos dados
-    cpf_cnpj = cpf_cnpj.replace(/\D/g, '');
-    telefone = telefone.replace(/\D/g, '');
-    const valorNumerico = parseFloat(valor.replace('R$ ', '').replace('.', '').replace(',', '.'));
+    if (cpf_cnpj) cpf_cnpj = cpf_cnpj.replace(/\D/g, '');
+    if (telefone) telefone = telefone.replace(/\D/g, '');
+    
+    // Converter valor para número se fornecido
+    if (valor !== undefined) {
+      if (typeof valor === 'string') {
+        valor = parseFloat(
+          valor.replace('R$ ', '')
+            .replace(/\./g, '')
+            .replace(',', '.')
+        );
+      }
+    } else {
+      valor = ficha.rows[0].valor;
+    }
+    
+    // Converter entrada para número se fornecido
+    if (entrada !== undefined) {
+      if (typeof entrada === 'string') {
+        entrada = parseFloat(
+          entrada.replace('R$ ', '')
+            .replace(/\./g, '')
+            .replace(',', '.')
+        );
+      }
+    } else {
+      entrada = ficha.rows[0].entrada;
+    }
+
+    // Usar valores existentes se não fornecidos
+    nome_cliente = nome_cliente || ficha.rows[0].nome_cliente;
+    cpf_cnpj = cpf_cnpj || ficha.rows[0].cpf_cnpj;
+    telefone = telefone || ficha.rows[0].telefone;
+    email = email || ficha.rows[0].email;
+    data = data || ficha.rows[0].data;
+    descricao = descricao !== undefined ? descricao : ficha.rows[0].descricao;
+    status = status || ficha.rows[0].status;
+    parcelas = parcelas !== undefined ? parcelas : ficha.rows[0].parcelas;
+    payment_status = payment_status || ficha.rows[0].payment_status;
 
     const updatedFicha = await db.query(
       `UPDATE fichas SET 
         nome_cliente = $1, cpf_cnpj = $2, telefone = $3, email = $4,
-        valor = $5, data = $6, descricao = $7, status = $8
-       WHERE id = $9 AND user_id = $10 RETURNING *`,
+        valor = $5, data = $6, descricao = $7, status = $8, entrada = $9, parcelas = $10, payment_status = $11
+       WHERE id = $12 AND user_id = $13 RETURNING *`,
       [nome_cliente, cpf_cnpj, telefone, email, 
-       valorNumerico, data, descricao, status, id, req.userId]
+       valor, data, descricao, status, entrada, parcelas, payment_status, id, req.userId]
     );
     
     res.json(updatedFicha.rows[0]);
   } catch (err) {
+    console.error('Erro ao atualizar ficha:', err);
     res.status(500).json({ error: 'Erro ao atualizar ficha' });
   }
 });

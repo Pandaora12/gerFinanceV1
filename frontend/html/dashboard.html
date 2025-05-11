@@ -3,13 +3,19 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta http-equiv="Content-Security-Policy" content="default-src 'self'; connect-src 'self' http://localhost:3000; script-src 'self' 'unsafe-inline'; style-src 'self' 'unsafe-inline' https://cdnjs.cloudflare.com; img-src 'self' data:; font-src 'self' https://cdnjs.cloudflare.com">
   <title>Dashboard</title>
   <link rel="stylesheet" href="../css/dashboard.css">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css">
 </head>
+
 <body>
   <!-- Cabeçalho -->
   <header class="dashboard-header">
-    <button class="hamburger-menu" id="menu-toggle" aria-label="Abrir menu">☰</button>
+    <button class="hamburger-menu" id="menu-toggle" aria-label="Abrir menu">
+      <i class="fas fa-bars menu-icon"></i>
+      <i class="fas fa-times close-icon hidden"></i>
+    </button>
     <h1>Dashboard</h1>
   </header>
 
@@ -22,7 +28,7 @@
 
     <!-- Campo de busca -->
     <div id="search-container">
-      <input type="text" id="search-input" placeholder="Buscar por CPF/CNPJ" />
+      <input type="text" id="search-input" placeholder="Buscar por CPF/CNPJ ou nome" />
       <button id="search-btn">Buscar</button>
     </div>
 
@@ -55,7 +61,59 @@
       <span class="close-modal">&times;</span>
       <h2>Editar Ficha</h2>
       <form id="edit-table-form">
-        <!-- Campos serão preenchidos dinamicamente -->
+        <div class="form-group">
+          <label for="edit-nome">Nome do Cliente:</label>
+          <input type="text" id="edit-nome" required>
+        </div>
+        <div class="form-group">
+          <label for="edit-cpf">CPF/CNPJ:</label>
+          <input type="text" id="edit-cpf" required>
+        </div>
+        <div class="form-group">
+          <label for="edit-telefone">Telefone:</label>
+          <input type="text" id="edit-telefone" required>
+        </div>
+        <div class="form-group">
+          <label for="edit-email">Email:</label>
+          <input type="email" id="edit-email" required>
+        </div>
+        <div class="form-group">
+          <label for="edit-valor">Valor:</label>
+          <input type="text" id="edit-valor" required>
+        </div>
+        <div class="form-group">
+          <label for="edit-entrada">Entrada (opcional):</label>
+          <input type="text" id="edit-entrada">
+        </div>
+        <div class="form-group">
+          <label for="edit-parcelas">Número de Parcelas (opcional):</label>
+          <input type="number" id="edit-parcelas" min="0" max="24">
+          <div id="edit-installment-value"></div>
+        </div>
+        <div class="form-group">
+          <label for="edit-data">Data:</label>
+          <input type="date" id="edit-data" required>
+        </div>
+        <div class="form-group">
+          <label for="edit-descricao">Descrição:</label>
+          <textarea id="edit-descricao" rows="4" required></textarea>
+        </div>
+        <div class="form-group">
+          <label for="edit-status">Status:</label>
+          <select id="edit-status" required>
+            <option value="ENTRADA">ENTRADA</option>
+            <option value="CAIXA">CAIXA</option>
+            <option value="SAÍDA">SAÍDA</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label for="edit-payment-status">Status de Pagamento:</label>
+          <select id="edit-payment-status">
+            <option value="NAO_PAGO">Não Pago</option>
+            <option value="PARCIALMENTE_PAGO">Parcialmente Pago</option>
+            <option value="PAGO">Pago Integralmente</option>
+          </select>
+        </div>
       </form>
       <button id="save-edit-btn" class="btn-save">Salvar Alterações</button>
     </div>
@@ -79,18 +137,20 @@
     <div class="modal-content">
       <span class="close-modal">&times;</span>
       <h2>Criar Nova Ficha</h2>
+
       <form id="create-table-form">
         <div class="form-group">
           <label for="client-name">Nome do Cliente:</label>
           <input type="text" id="client-name" required>
         </div>
+
         <div class="form-group">
           <label for="cpf-cnpj">CPF/CNPJ:</label>
-          <input type="text" id="cpf-cnpj" required>
+          <input type="text" id="cpf-cnpj" pattern="(\d{3}\.\d{3}\.\d{3}-\d{2})|(\d{2}\.\d{3}\.\d{3}/\d{4}-\d{2})" required>
         </div>
         <div class="form-group">
           <label for="phone-number">Telefone:</label>
-          <input type="text" id="phone-number" required>
+          <input type="text" id="phone-number" pattern="\(\d{2}\) \d{4,5}-\d{4}" required>
         </div>
         <div class="form-group">
           <label for="email">Email:</label>
@@ -98,7 +158,16 @@
         </div>
         <div class="form-group">
           <label for="value">Valor:</label>
-          <input type="text" id="value" required>
+          <input type="text" id="value" placeholder="R$ 0,00" required>
+        </div>
+        <div class="form-group">
+          <label for="entry-value">Entrada (opcional):</label>
+          <input type="text" id="entry-value" placeholder="R$ 0,00">
+        </div>
+        <div class="form-group">
+          <label for="installments">Número de Parcelas (opcional):</label>
+          <input type="number" id="installments" min="0" max="24">
+          <div id="installment-value"></div>
         </div>
         <div class="form-group">
           <label for="date">Data:</label>
@@ -116,6 +185,14 @@
             <option value="SAÍDA">SAÍDA</option>
           </select>
         </div>
+        <div class="form-group">
+          <label for="payment-status">Status de Pagamento:</label>
+          <select id="payment-status">
+            <option value="NAO_PAGO">Não Pago</option>
+            <option value="PARCIALMENTE_PAGO">Parcialmente Pago</option>
+            <option value="PAGO">Pago Integralmente</option>
+          </select>
+        </div>
         <div class="form-actions">
           <button type="submit" id="save-table-btn">Salvar</button>
         </div>
@@ -131,13 +208,18 @@
   <!-- Menu lateral -->
   <nav id="sidebar-menu">
     <ul>
-      <li><a href="dashboard.html">📊 Dashboard</a></li>
-      <li><a href="settings.html">⚙ Configurações</a></li>
-      <li><a href="#" id="logout-btn">🚪 Sair</a></li>
+      <li><a href="dashboard.html"><i class="fas fa-chart-bar"></i> Dashboard</a></li>
+      <li><a href="payments.html"><i class="fas fa-money-bill-wave"></i> Pagamentos</a></li>
+      <li><a href="settings.html"><i class="fas fa-cog"></i> Configurações</a></li>
+      <li><a href="#" id="logout-btn"><i class="fas fa-sign-out-alt"></i> Sair</a></li>
     </ul>
   </nav>
 
-  <!-- Script principal -->
+  <!-- Scripts -->
+  <script src="../js/masks.js"></script>
+  <script src="../js/dashboard-utils.js"></script>
   <script src="../js/dashboard.js"></script>
+  <script src="../js/dashboard_modal.js"></script>
+
 </body>
 </html>

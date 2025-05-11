@@ -92,6 +92,8 @@ body {
   border-radius: 8px;
   box-shadow: 0 2px 15px rgba(0,0,0,0.05);
   overflow: hidden;
+  position: relative;
+  padding-bottom: 50px; /* Espaço para o botão de paginação */
 }
 
 .user-list {
@@ -232,6 +234,11 @@ body {
   gap: 10px;
 }
 
+#sidebar-menu i {
+  width: 20px;
+  text-align: center;
+}
+
 /* Botão do menu hamburguer */
 .hamburger-menu {
   background: none;
@@ -240,6 +247,41 @@ body {
   font-size: 1.5rem;
   cursor: pointer;
   margin-right: 15px;
+  width: 40px;
+  height: 40px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  position: relative;
+}
+
+.hamburger-menu i {
+  position: absolute;
+  transition: all 0.3s ease;
+}
+
+.hamburger-menu .close-icon {
+  transform: rotate(90deg);
+  opacity: 0;
+}
+
+.hamburger-menu .menu-icon {
+  transform: rotate(0);
+  opacity: 1;
+}
+
+.hamburger-menu.active .close-icon {
+  transform: rotate(0);
+  opacity: 1;
+}
+
+.hamburger-menu.active .menu-icon {
+  transform: rotate(-90deg);
+  opacity: 0;
+}
+
+.hidden {
+  display: none !important;
 }
 
 /* Modais */
@@ -352,6 +394,100 @@ body {
   cursor: pointer;
   font-weight: 600;
   margin-right: 10px;
+}
+
+/* Adicionar no dashboard.css */
+input:invalid {
+  border-color: #e74c3c !important;
+  animation: shake 0.3s;
+}
+
+@keyframes shake {
+  0%, 100% { transform: translateX(0); }
+  25% { transform: translateX(-5px); }
+  75% { transform: translateX(5px); }
+}
+
+.error-message {
+  color: #e74c3c;
+  font-size: 0.8rem;
+  margin-top: 5px;
+}
+
+/* Botão de PDF */
+.pdf-button {
+  position: absolute;
+  top: 15px;
+  right: 50px;
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  background-color: #e74c3c;
+  color: white;
+  border: none;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  box-shadow: 0 2px 5px rgba(0,0,0,0.2);
+  transition: all 0.3s;
+}
+
+.pdf-button:hover {
+  transform: scale(1.1);
+  background-color: #c0392b;
+}
+
+/* Botão de paginação */
+.pagination-button {
+  position: absolute;
+  bottom: 10px;
+  right: 20px;
+  padding: 8px 15px;
+  background-color: #3498db;
+  color: white;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+  font-weight: 500;
+  transition: all 0.3s;
+}
+
+.pagination-button:hover {
+  background-color: #2980b9;
+}
+
+/* Informação de parcelas */
+#installment-value, #edit-installment-value {
+  margin-top: 5px;
+  font-size: 0.9rem;
+  color: #2c3e50;
+  font-weight: 500;
+}
+
+/* Status de pagamento */
+.payment-status {
+  display: inline-block;
+  padding: 4px 8px;
+  border-radius: 4px;
+  font-size: 0.8rem;
+  font-weight: 600;
+  margin-left: 10px;
+}
+
+.payment-status.not-paid {
+  background-color: #e74c3c;
+  color: white;
+}
+
+.payment-status.partially-paid {
+  background-color: #f39c12;
+  color: white;
+}
+
+.payment-status.paid {
+  background-color: #2ecc71;
+  color: white;
 }
 
 /* Responsividade */
