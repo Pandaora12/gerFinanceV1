@@ -64,11 +64,15 @@ gerFinanceV1/
 - Corrigido problema de formatação de valores monetários
 - Implementada geração de PDF das fichas
 - Melhorada a interface do menu de navegação
+- Implementado sistema de paginação no dashboard e na página de pagamentos
+- Adicionado sistema de notificações para pagamentos pendentes
+- Implementada página de contratos com modelos personalizáveis
+- Adicionadas configurações de tema (claro/escuro)
 
 ## Próximos Passos
 
-- Implementar sistema de paginação
 - Adicionar filtros avançados
 - Implementar relatórios personalizados
 - Melhorar a responsividade para dispositivos móveis
-- Adicionar notificações de pagamentos pendentes
+- Implementar sistema de backup automático
+- Adicionar dashboard com métricas avançadas
