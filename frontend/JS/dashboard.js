@@ -38,7 +38,9 @@ document.addEventListener("DOMContentLoaded", async function () {
   // Configura o botão de busca
   document.getElementById("search-btn").addEventListener("click", () => {
     const searchTerm = document.getElementById("search-input").value.trim();
-    loadDashboardData(searchTerm);
+    // Resetar para a primeira página ao buscar
+    currentPage = 1;
+    loadDashboardData(currentPage, searchTerm);
   });
   
   // Evento de criação de ficha
@@ -88,6 +90,8 @@ document.addEventListener("DOMContentLoaded", async function () {
         payment_status: document.getElementById("payment-status").value
       };
 
+      console.log("Enviando dados:", formData);
+
       const response = await fetch("http://localhost:3000/fichas", {
         method: "POST",
         headers: {
@@ -97,12 +101,23 @@ document.addEventListener("DOMContentLoaded", async function () {
         body: JSON.stringify(formData)
       });
 
-      if (!response.ok) throw new Error("Erro ao criar ficha");
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.error || "Erro ao criar ficha");
+      }
       
       closeAllModals();
-      await loadDashboardData();
+      await loadDashboardData(currentPage);
       this.reset();
+      
+      // Mostrar notificação de sucesso
+      if (window.notifications) {
+        window.notifications.show("Ficha criada com sucesso!", "success");
+      } else {
+        alert("Ficha criada com sucesso!");
+      }
     } catch (error) {
+      console.error("Erro ao criar ficha:", error);
       alert(`Erro: ${error.message}`);
     }
   });
@@ -167,53 +182,208 @@ document.addEventListener("DOMContentLoaded", async function () {
     document.getElementById("edit-parcelas").addEventListener("input", calcularParcelaEdit);
   }
 
-  // Adicionar botão de paginação
-  const addPaginationButton = () => {
-    const container = document.getElementById("user-list-container");
-    const paginationButton = document.createElement("button");
-    paginationButton.id = "pagination-btn";
-    paginationButton.className = "pagination-button";
-    paginationButton.textContent = "Carregar mais";
-    paginationButton.addEventListener("click", () => {
-      // Implementação futura de paginação
-      alert("Funcionalidade de paginação será implementada em breve!");
-    });
-    
-    container.appendChild(paginationButton);
-  };
+  // Verificar se há notificações de pagamentos pendentes
+  try {
+    if (window.notifications && localStorage.getItem('notify_payments') !== 'false') {
+      // Desativando temporariamente para evitar o erro 500
+      // window.notifications.checkPendingPayments();
+    }
+  } catch (error) {
+    console.error("Erro ao verificar pagamentos pendentes:", error);
+  }
 
-  await loadDashboardData();
-  addPaginationButton();
+  // Verificar se há uma ficha para abrir (redirecionamento da página de pagamentos)
+  const openFichaId = localStorage.getItem('openFichaId');
+  if (openFichaId) {
+    try {
+      const ficha = await getFichaById(openFichaId);
+      if (ficha) {
+        openViewModal(ficha);
+      }
+      localStorage.removeItem('openFichaId');
+    } catch (error) {
+      console.error("Erro ao abrir ficha:", error);
+    }
+  }
+
+  // Configurar botões de paginação
+  setupPaginationButtons();
+  
+  // Garantir que o botão anterior esteja oculto na inicialização
+  const prevButton = document.getElementById("prev-page-btn");
+  if (prevButton) {
+    prevButton.style.display = "none";
+    console.log("Botão anterior ocultado na inicialização (dashboard)");
+  }
+
+  // Inicializar com a primeira página
+  console.log("Carregando dashboard data...");
+  await loadDashboardData(1); // Forçar página 1 na inicialização
+  console.log("Dashboard data carregado");
 });
 
-async function loadDashboardData(searchTerm = "") {
+// Variável global para controlar a página atual
+let currentPage = 1;
+// Número de registros por página
+const RECORDS_PER_PAGE = 5;
+// Variável para armazenar o termo de busca atual
+let currentSearchTerm = "";
+
+// Configurar botões de paginação
+function setupPaginationButtons() {
+  const prevButton = document.getElementById("prev-page-btn");
+  const nextButton = document.getElementById("next-page-btn");
+  
+  if (prevButton) {
+    prevButton.addEventListener("click", async () => {
+      if (currentPage > 1) {
+        currentPage--;
+        await loadDashboardData(currentPage, currentSearchTerm);
+      }
+    });
+  }
+  
+  if (nextButton) {
+    nextButton.addEventListener("click", async () => {
+      currentPage++;
+      
+      // Mostrar o botão "Anterior" quando clicar em "Próxima"
+      if (prevButton && currentPage > 1) {
+        prevButton.style.display = "inline-flex";
+        console.log("Exibindo botão anterior (dashboard)");
+      }
+      
+      await loadDashboardData(currentPage, currentSearchTerm);
+    });
+  }
+}
+
+async function loadDashboardData(page = 1, searchTerm = "") {
+  // Atualizar visibilidade do botão anterior com base na página atual
+  const prevButton = document.getElementById("prev-page-btn");
+  if (prevButton) {
+    if (page > 1) {
+      prevButton.style.display = "inline-flex";
+      console.log("Exibindo botão anterior no carregamento (dashboard)");
+    } else {
+      prevButton.style.display = "none";
+      console.log("Ocultando botão anterior no carregamento (dashboard)");
+    }
+  }
   try {
-    const response = await fetch("http://localhost:3000/fichas", {
+    console.log(`Carregando fichas da página ${page}...`);
+    currentSearchTerm = searchTerm;
+    
+    let url = `http://localhost:3000/fichas?page=${page}&limit=${RECORDS_PER_PAGE}`;
+    if (searchTerm) {
+      url += `&search=${encodeURIComponent(searchTerm)}`;
+    }
+    
+    console.log("URL da requisição:", url);
+    console.log("Token:", localStorage.getItem("authToken"));
+    
+    const response = await fetch(url, {
       headers: {
         "Authorization": `Bearer ${localStorage.getItem("authToken")}`,
         "Content-Type": "application/json",
       },
     });
 
+    console.log("Status da resposta:", response.status);
+    
     if (!response.ok) {
-      throw new Error("Erro ao carregar fichas");
+      const errorData = await response.json();
+      throw new Error(errorData.error || "Erro ao carregar fichas");
     }
 
-    let fichas = await response.json();
+    const data = await response.json();
+    console.log("Dados recebidos:", data);
     
-    // Filtra localmente se houver termo de busca
-    if (searchTerm) {
+    // Garantir que fichas é um array
+    const fichas = Array.isArray(data.fichas) ? data.fichas : [];
+    console.log("Fichas processadas:", fichas);
+    
+    // Filtrar localmente se houver termo de busca (caso a API não suporte busca)
+    let fichasFiltradas = fichas;
+    if (searchTerm && !url.includes('search=')) {
       const searchTermClean = searchTerm.replace(/\D/g, '');
-      fichas = fichas.filter(f => 
+      fichasFiltradas = fichas.filter(f => 
         (f.cpf_cnpj && f.cpf_cnpj.includes(searchTermClean)) || 
         (f.nome_cliente && f.nome_cliente.toLowerCase().includes(searchTerm.toLowerCase()))
       );
     }
 
-    renderFichasList(fichas);
+    renderFichasList(fichasFiltradas);
+    
+    // Garantir que os valores de paginação são números
+    const currentPageNum = parseInt(data.currentPage) || 1;
+    const totalPagesNum = parseInt(data.totalPages) || 1;
+    
+    updatePaginationControls(currentPageNum, totalPagesNum);
   } catch (error) {
     console.error("Erro ao carregar fichas:", error);
-    alert(`Erro ao carregar fichas: ${error.message}`);
+    // Em caso de erro, renderizar lista vazia
+    renderFichasList([]);
+    updatePaginationControls(1, 1);
+  }
+}
+
+// Atualizar controles de paginação
+function updatePaginationControls(currentPage, totalPages) {
+  const prevButton = document.getElementById("prev-page-btn");
+  const nextButton = document.getElementById("next-page-btn");
+  const pageInfo = document.getElementById("page-info");
+  
+  console.log("Atualizando controles de paginação:", { currentPage, totalPages });
+  
+  if (prevButton) {
+    prevButton.disabled = currentPage <= 1;
+    prevButton.classList.toggle("disabled", currentPage <= 1);
+    
+    // Esconder o botão "Anterior" na primeira página
+    if (currentPage <= 1) {
+      prevButton.style.display = "none";
+      console.log("Botão anterior ocultado (dashboard)");
+    } else {
+      prevButton.style.display = "inline-flex";
+      console.log("Botão anterior exibido (dashboard)");
+    }
+  }
+  
+  if (nextButton) {
+    nextButton.disabled = currentPage >= totalPages;
+    nextButton.classList.toggle("disabled", currentPage >= totalPages);
+  }
+  
+  if (pageInfo) {
+    pageInfo.textContent = `Página ${currentPage} de ${totalPages}`;
+  }
+}
+
+async function getFichaById(fichaId) {
+  try {
+    console.log(`Buscando ficha com ID ${fichaId}...`);
+    
+    const response = await fetch(`http://localhost:3000/fichas/${fichaId}`, {
+      headers: {
+        "Authorization": `Bearer ${localStorage.getItem("authToken")}`,
+        "Content-Type": "application/json",
+      },
+    });
+
+    console.log("Status da resposta:", response.status);
+    
+    if (!response.ok) {
+      const errorData = await response.json();
+      throw new Error(errorData.error || "Erro ao buscar ficha");
+    }
+
+    const ficha = await response.json();
+    console.log("Ficha encontrada:", ficha);
+    return ficha;
+  } catch (error) {
+    console.error("Erro ao buscar ficha:", error);
+    return null;
   }
 }
 
@@ -255,15 +425,31 @@ function getPaymentStatusText(status) {
 }
 
 function renderFichasList(fichas) {
+  console.log("Renderizando lista de fichas:", fichas);
+  
   const userList = document.getElementById("user-list");
+  if (!userList) {
+    console.error("Elemento user-list não encontrado");
+    return;
+  }
+  
   userList.innerHTML = "";
 
-  if (fichas.length === 0) {
+  // Garantir que fichas é um array
+  if (!Array.isArray(fichas) || fichas.length === 0) {
+    console.log("Nenhuma ficha encontrada");
     userList.innerHTML = '<li class="no-results">Nenhuma ficha encontrada</li>';
     return;
   }
 
   fichas.forEach((ficha) => {
+    if (!ficha) {
+      console.log("Ficha inválida encontrada, pulando...");
+      return; // Pular itens nulos ou indefinidos
+    }
+    
+    console.log("Renderizando ficha:", ficha);
+    
     const li = document.createElement("li");
     li.className = "user-item";
     li.dataset.id = ficha.id;
@@ -273,16 +459,18 @@ function renderFichasList(fichas) {
       `<span class="payment-status ${getPaymentStatusClass(ficha.payment_status)}">${getPaymentStatusText(ficha.payment_status)}</span>` : '';
 
     li.innerHTML = `
-      <span class="user-name">${ficha.nome_cliente} ${paymentStatusHtml}</span>
+      <span class="user-name">${ficha.nome_cliente || 'Cliente sem nome'} ${paymentStatusHtml}</span>
       <span class="status">
         <span class="status-circle ${getStatusClass(ficha.status)}"></span>
-        <span class="status-text">${ficha.status}</span>
+        <span class="status-text">${ficha.status || 'Sem status'}</span>
       </span>
     `;
 
     li.addEventListener("click", () => openViewModal(ficha));
     userList.appendChild(li);
   });
+  
+  console.log("Lista de fichas renderizada com sucesso");
 }
 
 function closeAllModals() {

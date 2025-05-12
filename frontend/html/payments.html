@@ -7,6 +7,9 @@
   <title>Pagamentos</title>
   <link rel="stylesheet" href="../css/dashboard.css">
   <link rel="stylesheet" href="../css/payments.css">
+  <link rel="stylesheet" href="../css/dashboard/pagination.css">
+  <link rel="stylesheet" href="../css/notifications.css">
+  <link rel="stylesheet" href="../css/themes.css">
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css">
 </head>
 
@@ -87,6 +90,17 @@
           </tbody>
         </table>
       </div>
+      
+      <!-- Paginação -->
+      <div class="pagination-controls">
+        <button id="prev-page-btn" class="pagination-button" style="display: none;">
+          <i class="fas fa-chevron-left"></i> Anterior
+        </button>
+        <span id="page-info">Página 1 de 1</span>
+        <button id="next-page-btn" class="pagination-button">
+          Próxima <i class="fas fa-chevron-right"></i>
+        </button>
+      </div>
     </div>
   </main>
 
@@ -95,13 +109,19 @@
     <ul>
       <li><a href="dashboard.html"><i class="fas fa-chart-bar"></i> Dashboard</a></li>
       <li><a href="payments.html"><i class="fas fa-money-bill-wave"></i> Pagamentos</a></li>
+      <li><a href="contracts.html"><i class="fas fa-file-contract"></i> Contratos</a></li>
       <li><a href="settings.html"><i class="fas fa-cog"></i> Configurações</a></li>
       <li><a href="#" id="logout-btn"><i class="fas fa-sign-out-alt"></i> Sair</a></li>
     </ul>
   </nav>
 
+  <!-- Notificações -->
+  <div id="notification-container" class="notification-container"></div>
+
   <!-- Scripts -->
   <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/3.9.1/chart.min.js"></script>
+  <script src="../js/notifications.js"></script>
+  <script src="../js/theme-manager.js"></script>
   <script src="../js/masks.js"></script>
   <script src="../js/dashboard-utils.js"></script>
   <script src="../js/payments.js"></script>

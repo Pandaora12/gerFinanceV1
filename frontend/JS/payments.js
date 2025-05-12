@@ -27,55 +27,175 @@ document.addEventListener("DOMContentLoaded", async function () {
   });
 
   // Carregar dados e inicializar a página
-  await loadPaymentsData();
+  console.log("Carregando dados de pagamentos...");
+  await loadPaymentsData(1);
   
   // Configurar filtros
   document.getElementById("apply-filters").addEventListener("click", async () => {
-    await loadPaymentsData();
+    await loadPaymentsData(1);
   });
+  
+  // Configurar botões de paginação
+  setupPaginationButtons();
+  
+  // Garantir que o botão anterior esteja oculto na inicialização
+  const prevButton = document.getElementById("prev-page-btn");
+  if (prevButton) {
+    prevButton.style.display = "none";
+    console.log("Botão anterior ocultado na inicialização (pagamentos)");
+  }
 });
 
-async function loadPaymentsData() {
+// Variável global para controlar a página atual
+let currentPage = 1;
+// Número de registros por página
+const RECORDS_PER_PAGE = 5;
+
+// Configurar botões de paginação
+function setupPaginationButtons() {
+  const prevButton = document.getElementById("prev-page-btn");
+  const nextButton = document.getElementById("next-page-btn");
+  
+  if (prevButton) {
+    prevButton.addEventListener("click", async () => {
+      if (currentPage > 1) {
+        currentPage--;
+        await loadPaymentsData(currentPage);
+      }
+    });
+  }
+  
+  if (nextButton) {
+    nextButton.addEventListener("click", async () => {
+      currentPage++;
+      
+      // Mostrar o botão "Anterior" quando clicar em "Próxima"
+      if (prevButton && currentPage > 1) {
+        prevButton.style.display = "inline-flex";
+        console.log("Exibindo botão anterior (pagamentos)");
+      }
+      
+      await loadPaymentsData(currentPage);
+    });
+  }
+}
+
+async function loadPaymentsData(page = 1) {
+  // Atualizar visibilidade do botão anterior com base na página atual
+  const prevButton = document.getElementById("prev-page-btn");
+  if (prevButton) {
+    if (page > 1) {
+      prevButton.style.display = "inline-flex";
+      console.log("Exibindo botão anterior no carregamento (pagamentos)");
+    } else {
+      prevButton.style.display = "none";
+      console.log("Ocultando botão anterior no carregamento (pagamentos)");
+    }
+  }
   try {
-    const response = await fetch("http://localhost:3000/fichas", {
+    console.log(`Carregando pagamentos da página ${page}...`);
+    
+    const statusFilter = document.getElementById("filter-status").value;
+    const paymentFilter = document.getElementById("filter-payment").value;
+    
+    let url = `http://localhost:3000/fichas?page=${page}&limit=${RECORDS_PER_PAGE}`;
+    
+    // Adicionar filtros à URL se selecionados
+    if (statusFilter !== "all") {
+      url += `&status=${statusFilter}`;
+    }
+    
+    if (paymentFilter !== "all") {
+      url += `&payment_status=${paymentFilter}`;
+    }
+    
+    console.log("URL da requisição:", url);
+    console.log("Token:", localStorage.getItem("authToken"));
+    
+    const response = await fetch(url, {
       headers: {
         "Authorization": `Bearer ${localStorage.getItem("authToken")}`,
         "Content-Type": "application/json",
       },
     });
 
+    console.log("Status da resposta:", response.status);
+    
     if (!response.ok) {
-      throw new Error("Erro ao carregar dados financeiros");
+      const errorData = await response.json();
+      throw new Error(errorData.error || "Erro ao carregar dados financeiros");
     }
 
-    let fichas = await response.json();
+    const data = await response.json();
+    console.log("Dados recebidos:", data);
     
-    // Aplicar filtros se selecionados
-    const statusFilter = document.getElementById("filter-status").value;
-    const paymentFilter = document.getElementById("filter-payment").value;
+    // Garantir que fichas é um array
+    const fichas = Array.isArray(data.fichas) ? data.fichas : [];
+    console.log("Fichas processadas:", fichas);
     
-    if (statusFilter !== "all") {
-      fichas = fichas.filter(ficha => ficha.status === statusFilter);
-    }
-    
-    if (paymentFilter !== "all") {
-      fichas = fichas.filter(ficha => ficha.payment_status === paymentFilter);
-    }
-
     // Renderizar tabela e gráficos
     renderPaymentsTable(fichas);
     renderCharts(fichas);
+    
+    // Atualizar controles de paginação
+    const currentPageNum = parseInt(data.currentPage) || 1;
+    const totalPagesNum = parseInt(data.totalPages) || 1;
+    
+    updatePaginationControls(currentPageNum, totalPagesNum);
   } catch (error) {
     console.error("Erro ao carregar dados:", error);
-    alert(`Erro ao carregar dados: ${error.message}`);
+    // Em caso de erro, renderizar tabela vazia
+    renderPaymentsTable([]);
+    renderEmptyCharts();
+    updatePaginationControls(1, 1);
+  }
+}
+
+// Atualizar controles de paginação
+function updatePaginationControls(currentPage, totalPages) {
+  const prevButton = document.getElementById("prev-page-btn");
+  const nextButton = document.getElementById("next-page-btn");
+  const pageInfo = document.getElementById("page-info");
+  
+  console.log("Atualizando controles de paginação:", { currentPage, totalPages });
+  
+  if (prevButton) {
+    prevButton.disabled = currentPage <= 1;
+    prevButton.classList.toggle("disabled", currentPage <= 1);
+    
+    // Esconder o botão "Anterior" na primeira página
+    if (currentPage <= 1) {
+      prevButton.style.display = "none";
+      console.log("Botão anterior ocultado (pagamentos)");
+    } else {
+      prevButton.style.display = "inline-flex";
+      console.log("Botão anterior exibido (pagamentos)");
+    }
+  }
+  
+  if (nextButton) {
+    nextButton.disabled = currentPage >= totalPages;
+    nextButton.classList.toggle("disabled", currentPage >= totalPages);
+  }
+  
+  if (pageInfo) {
+    pageInfo.textContent = `Página ${currentPage} de ${totalPages}`;
   }
 }
 
 function renderPaymentsTable(fichas) {
+  console.log("Renderizando tabela de pagamentos:", fichas);
+  
   const tableBody = document.getElementById("payments-table-body");
+  if (!tableBody) {
+    console.error("Elemento payments-table-body não encontrado");
+    return;
+  }
+  
   tableBody.innerHTML = "";
 
-  if (fichas.length === 0) {
+  if (!Array.isArray(fichas) || fichas.length === 0) {
+    console.log("Nenhum registro encontrado");
     const row = document.createElement("tr");
     row.innerHTML = '<td colspan="8" style="text-align: center;">Nenhum registro encontrado</td>';
     tableBody.appendChild(row);
@@ -83,13 +203,20 @@ function renderPaymentsTable(fichas) {
   }
 
   fichas.forEach((ficha) => {
+    if (!ficha) {
+      console.log("Ficha inválida encontrada, pulando...");
+      return; // Pular itens nulos ou indefinidos
+    }
+    
+    console.log("Renderizando ficha na tabela:", ficha);
+    
     const row = document.createElement("tr");
     
     // Formatar valores para exibição
     const valorFormatado = new Intl.NumberFormat('pt-BR', { 
       style: 'currency', 
       currency: 'BRL' 
-    }).format(ficha.valor);
+    }).format(ficha.valor || 0);
     
     const entradaFormatada = ficha.entrada ? new Intl.NumberFormat('pt-BR', { 
       style: 'currency', 
@@ -120,17 +247,17 @@ function renderPaymentsTable(fichas) {
     }
     
     // Formatar CPF/CNPJ
-    const cpfCnpj = ficha.cpf_cnpj.length === 11 ? 
+    const cpfCnpj = ficha.cpf_cnpj && ficha.cpf_cnpj.length === 11 ? 
       ficha.cpf_cnpj.replace(/(\d{3})(\d{3})(\d{3})(\d{2})/, '$1.$2.$3-$4') :
-      ficha.cpf_cnpj.replace(/(\d{2})(\d{3})(\d{3})(\d{4})(\d{2})/, '$1.$2.$3/$4-$5');
+      ficha.cpf_cnpj ? ficha.cpf_cnpj.replace(/(\d{2})(\d{3})(\d{3})(\d{4})(\d{2})/, '$1.$2.$3/$4-$5') : '-';
 
     row.innerHTML = `
-      <td>${ficha.nome_cliente}</td>
+      <td>${ficha.nome_cliente || 'Cliente sem nome'}</td>
       <td>${cpfCnpj}</td>
       <td>${valorFormatado}</td>
       <td>${entradaFormatada}</td>
       <td>${parcelasFormatadas}</td>
-      <td>${ficha.status}</td>
+      <td>${ficha.status || 'Sem status'}</td>
       <td class="payment-status-cell ${paymentStatusClass}">${paymentStatusText}</td>
       <td>
         <div class="payment-actions">
@@ -145,6 +272,8 @@ function renderPaymentsTable(fichas) {
     tableBody.appendChild(row);
   });
   
+  console.log("Tabela de pagamentos renderizada com sucesso");
+  
   // Adicionar event listeners para os botões de status de pagamento
   document.querySelectorAll('.btn-payment-status').forEach(button => {
     button.addEventListener('click', async (e) => {
@@ -154,7 +283,7 @@ function renderPaymentsTable(fichas) {
       if (status) {
         // Atualizar status de pagamento
         await updatePaymentStatus(fichaId, status);
-      } else {
+      } else if (e.target.classList.contains('btn-view')) {
         // Botão "Ver" - redirecionar para o dashboard com a ficha aberta
         localStorage.setItem('openFichaId', fichaId);
         window.location.href = 'dashboard.html';
@@ -165,21 +294,8 @@ function renderPaymentsTable(fichas) {
 
 async function updatePaymentStatus(fichaId, status) {
   try {
-    // Primeiro, buscar a ficha atual
-    const response = await fetch(`http://localhost:3000/fichas/${fichaId}`, {
-      headers: {
-        "Authorization": `Bearer ${localStorage.getItem("authToken")}`,
-        "Content-Type": "application/json",
-      },
-    });
-
-    if (!response.ok) {
-      throw new Error("Erro ao buscar ficha");
-    }
-
-    const ficha = await response.json();
+    console.log(`Atualizando status de pagamento da ficha ${fichaId} para ${status}...`);
     
-    // Atualizar apenas o status de pagamento
     const updateResponse = await fetch(`http://localhost:3000/fichas/${fichaId}`, {
       method: "PUT",
       headers: {
@@ -187,31 +303,58 @@ async function updatePaymentStatus(fichaId, status) {
         "Authorization": `Bearer ${localStorage.getItem("authToken")}`
       },
       body: JSON.stringify({
-        ...ficha,
         payment_status: status
       }),
     });
 
+    console.log("Status da resposta (PUT):", updateResponse.status);
+    
     if (!updateResponse.ok) {
-      throw new Error("Erro ao atualizar status de pagamento");
+      const errorData = await updateResponse.json();
+      throw new Error(errorData.error || "Erro ao atualizar status de pagamento");
     }
 
     // Recarregar dados
-    await loadPaymentsData();
+    await loadPaymentsData(currentPage);
     
     // Feedback ao usuário
-    alert(`Status de pagamento atualizado com sucesso!`);
+    if (window.notifications) {
+      window.notifications.show(`Status de pagamento atualizado com sucesso!`, 'success');
+    } else {
+      alert(`Status de pagamento atualizado com sucesso!`);
+    }
   } catch (error) {
-    alert(`Erro: ${error.message}`);
+    console.error("Erro ao atualizar status de pagamento:", error);
+    
+    if (window.notifications) {
+      window.notifications.show(`Erro: ${error.message}`, 'error');
+    } else {
+      alert(`Erro: ${error.message}`);
+    }
   }
 }
 
 function renderCharts(fichas) {
-  renderPieChart(fichas);
-  renderLineChart(fichas);
+  try {
+    console.log("Renderizando gráficos...");
+    renderPieChart(fichas);
+    renderLineChart(fichas);
+  } catch (error) {
+    console.error("Erro ao renderizar gráficos:", error);
+    renderEmptyCharts();
+  }
+}
+
+function renderEmptyCharts() {
+  console.log("Renderizando gráficos vazios");
+  // Renderizar gráficos vazios
+  renderPieChart([]);
+  renderLineChart([]);
 }
 
 function renderPieChart(fichas) {
+  console.log("Renderizando gráfico de pizza...");
+  
   // Calcular totais por status
   const totals = {
     ENTRADA: 0,
@@ -219,11 +362,15 @@ function renderPieChart(fichas) {
     CAIXA: 0
   };
   
-  fichas.forEach(ficha => {
-    if (ficha.status in totals) {
-      totals[ficha.status] += parseFloat(ficha.valor);
-    }
-  });
+  if (Array.isArray(fichas)) {
+    fichas.forEach(ficha => {
+      if (ficha && ficha.status in totals) {
+        totals[ficha.status] += parseFloat(ficha.valor || 0);
+      }
+    });
+  }
+  
+  console.log("Totais calculados:", totals);
   
   // Configurar dados do gráfico
   const data = {
@@ -267,36 +414,55 @@ function renderPieChart(fichas) {
     window.pieChart.destroy();
   }
   
+  // Verificar se o elemento canvas existe
+  const ctx = document.getElementById('pie-chart');
+  if (!ctx) {
+    console.error("Elemento pie-chart não encontrado");
+    return;
+  }
+  
   // Criar novo gráfico
-  const ctx = document.getElementById('pie-chart').getContext('2d');
-  window.pieChart = new Chart(ctx, {
-    type: 'pie',
-    data: data,
-    options: options
-  });
+  try {
+    window.pieChart = new Chart(ctx.getContext('2d'), {
+      type: 'pie',
+      data: data,
+      options: options
+    });
+    console.log("Gráfico de pizza renderizado com sucesso");
+  } catch (error) {
+    console.error("Erro ao criar gráfico de pizza:", error);
+  }
 }
 
 function renderLineChart(fichas) {
+  console.log("Renderizando gráfico de linha...");
+  
   // Agrupar dados por mês
   const monthlyData = {};
   
-  fichas.forEach(ficha => {
-    const date = new Date(ficha.data);
-    const monthYear = `${date.getMonth() + 1}/${date.getFullYear()}`;
-    
-    if (!monthlyData[monthYear]) {
-      monthlyData[monthYear] = {
-        ENTRADA: 0,
-        SAÍDA: 0
-      };
-    }
-    
-    if (ficha.status === 'ENTRADA') {
-      monthlyData[monthYear].ENTRADA += parseFloat(ficha.valor);
-    } else if (ficha.status === 'SAÍDA') {
-      monthlyData[monthYear].SAÍDA += parseFloat(ficha.valor);
-    }
-  });
+  if (Array.isArray(fichas)) {
+    fichas.forEach(ficha => {
+      if (!ficha || !ficha.data) return;
+      
+      const date = new Date(ficha.data);
+      const monthYear = `${date.getMonth() + 1}/${date.getFullYear()}`;
+      
+      if (!monthlyData[monthYear]) {
+        monthlyData[monthYear] = {
+          ENTRADA: 0,
+          SAÍDA: 0
+        };
+      }
+      
+      if (ficha.status === 'ENTRADA') {
+        monthlyData[monthYear].ENTRADA += parseFloat(ficha.valor || 0);
+      } else if (ficha.status === 'SAÍDA') {
+        monthlyData[monthYear].SAÍDA += parseFloat(ficha.valor || 0);
+      }
+    });
+  }
+  
+  console.log("Dados mensais calculados:", monthlyData);
   
   // Ordenar meses
   const sortedMonths = Object.keys(monthlyData).sort((a, b) => {
@@ -380,11 +546,22 @@ function renderLineChart(fichas) {
     window.lineChart.destroy();
   }
   
+  // Verificar se o elemento canvas existe
+  const ctx = document.getElementById('line-chart');
+  if (!ctx) {
+    console.error("Elemento line-chart não encontrado");
+    return;
+  }
+  
   // Criar novo gráfico
-  const ctx = document.getElementById('line-chart').getContext('2d');
-  window.lineChart = new Chart(ctx, {
-    type: 'line',
-    data: data,
-    options: options
-  });
+  try {
+    window.lineChart = new Chart(ctx.getContext('2d'), {
+      type: 'line',
+      data: data,
+      options: options
+    });
+    console.log("Gráfico de linha renderizado com sucesso");
+  } catch (error) {
+    console.error("Erro ao criar gráfico de linha:", error);
+  }
 }
